@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Calendario 12 por 36</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <!--<link rel="stylesheet" href="assets/css/jquery.toast.min.css">-->
+    <!--<link rel="stylesheet" href="assets/css/style.css">-->
+    <!--<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">-->
+</head>
+<body>
+    <div id="app" style="height: 100vh; overflow: scroll;" class="p-0">
+
+        <div class="row bg-primary align-items-center text-white font-weight-bold">
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary" @click="changeMonth(currentDate.getMonth() - 1)"><h1>&lt;</h1></button>
+            </div>
+            <div class="col text-center">
+                <h2>{{currentMonthLabel}} {{currentDate.getFullYear()}}</h2>
+            </div>
+            <div class="col-auto">
+                <button type="button" class="btn btn-primary" @click="changeMonth(currentDate.getMonth() + 1)"><h1>&gt;</h1></button>
+            </div>
+        </div>
+
+        <div class="row bg-primary text-white">
+            <div v-for="dayOfWeek in daysOfWeek" class="col border text-center">
+                <h2>{{dayOfWeek}}</h2>
+            </div>
+        </div>
+
+        <div v-for="week in currentWeeks" class="row">
+            <div v-for="dayOfWeek in week" class="col border text-center py-3" :class="{ 'bg-danger': workingDaysThisMonth.includes(dayOfWeek) }">
+                <h2>{{dayOfWeek}}</h2>
+            </div>
+        </div>
+
+        <button type="button" class="btn btn-sm btn-warning mx-3 my-5" @click="toggleWorkingDay">Trocar dia de trabalho</button>
+
+    </div>
+    <script>
+        var app = new Vue({
+            el: '#app',
+            data: {
+                currentDate: new Date(),
+                daysOfWeek: ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'],
+                currentWeeks: [],
+                startWorkingDate: null,
+                workingDaysThisMonth: []
+            },
+
+            mounted() {
+                this.loadStartWorkingDate();
+                this.setCurrentWeeks();
+            },
+
+            computed: {
+                currentMonthLabel() {
+                    let m = this.currentDate.getMonth() + 1;
+
+                    switch (m) {
+                        case 1: return 'Janeiro';
+                        case 2: return 'Fevereiro';
+                        case 3: return 'Março';
+                        case 4: return 'Abril';
+                        case 5: return 'Maio';
+                        case 6: return 'Junho';
+                        case 7: return 'Julho';
+                        case 8: return 'Agosto';
+                        case 9: return 'Setembro';
+                        case 10: return 'Outubro';
+                        case 11: return 'Novembro';
+                        case 12: return 'Dezembro';
+                    }
+                }
+            },
+
+            methods: {
+                setWorkingDaysThisMonth() { debugger;
+                    this.workingDaysThisMonth = [];
+
+                    if (this.startWorkingDate) {
+                        let aux = new Date(this.startWorkingDate);
+                        let firstDayCurrMonth = new Date(this.currentDate);
+                        firstDayCurrMonth.setDate(1);
+                        this.addWorkingDayToResult(aux);                        
+
+                        while (aux >= firstDayCurrMonth) {
+                            aux.setDate(aux.getDate() - 2);
+                            this.addWorkingDayToResult(aux,);
+                        }
+
+                        aux = new Date(this.startWorkingDate);
+                        let lastDayCurrMonth = new Date(this.currentDate.getFullYear(), this.currentDate.getMonth() + 1, 0);
+
+                        while (aux <= lastDayCurrMonth) {
+                            aux.setDate(aux.getDate() + 2);
+                            this.addWorkingDayToResult(aux);
+                        }
+                    }
+                },
+
+                addWorkingDayToResult(aux) {
+                    if (aux.getMonth() === this.currentDate.getMonth() && !this.workingDaysThisMonth.includes(aux.getDate())) {
+                        this.workingDaysThisMonth.push(aux.getDate());
+                    }
+                },
+
+                changeMonth(newMonth) {
+                    this.currentDate.setMonth(newMonth);
+                    this.reloadCurrentDate();                    
+                },
+
+                reloadCurrentDate() {
+                    let currentDate = this.currentDate;
+                    this.currentDate = null;
+                    this.currentDate = currentDate;
+                    this.setCurrentWeeks();
+                },
+
+                setCurrentWeeks() {
+                    let tempDate = new Date(this.currentDate);
+                    let d = 1;
+                    tempDate.setDate(d);
+                    this.currentWeeks = [];
+                    let week = this.getEmptyWeek();
+
+                    while (tempDate.getMonth() === this.currentDate.getMonth()) {
+                        let dayOfWeek = tempDate.getDay();
+                        week[dayOfWeek] = d;
+
+                        if (dayOfWeek === 6) {
+                            this.currentWeeks.push(week);
+                            week = this.getEmptyWeek();
+                        }
+
+                        d++;
+                        tempDate.setDate(d);
+                    }
+
+                    this.currentWeeks.push(week);
+                    this.setWorkingDaysThisMonth();
+                },
+
+                getEmptyWeek() {
+                    return Array.apply(null, Array(7)).map(function () {});;
+                },
+
+                loadStartWorkingDate() {
+                    this.startWorkingDate = new Date();
+                    let temp = localStorage.getItem('startWorkingDate');
+
+                    if (temp) {
+                        try {
+                            temp = Number(temp);
+                            temp = new Date(temp);
+
+                            if (!isNaN(temp)) {
+                                this.startWorkingDate = temp;
+                            }
+                        } catch (e) {
+                            console.error(e);
+                        }
+                    }
+
+                    this.saveStartWorkingDate();
+                },
+
+                saveStartWorkingDate() {
+                    localStorage.setItem('startWorkingDate', this.startWorkingDate.getTime());
+                },
+
+                toggleWorkingDay() {
+                    this.startWorkingDate.setDate(this.startWorkingDate.getDate() - 1);
+                    this.saveStartWorkingDate();
+                    this.setWorkingDaysThisMonth();
+                }
+            }
+        });
+    </script>
+    <style>
+    </style>
+</body>
+</html>
