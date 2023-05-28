@@ -27,14 +27,14 @@
         </div>
 
         <div class="row bg-primary text-white">
-            <div v-for="dayOfWeek in daysOfWeek" class="col border text-center px-2">
+            <div v-for="dayOfWeek in daysOfWeek" class="col border text-center px-0">
                 {{dayOfWeek}}
             </div>
         </div>
 
         <div v-for="week in currentWeeks" class="row">
-            <div v-for="dayOfWeek in week" class="col border text-center py-3" :class="{ 'bg-danger': workingDaysThisMonth.includes(dayOfWeek) }">
-                <h5>{{dayOfWeek}}</h5>
+            <div v-for="dayOfWeek in week" class="col border text-center pt-2 px-0" :class="{ 'bg-danger': workingDaysThisMonth.includes(dayOfWeek) }">
+                <h2>{{dayOfWeek}}</h2>
             </div>
         </div>
 
